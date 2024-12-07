@@ -6,9 +6,9 @@ metadata:
     {{ .Values.svc_sts.labels.key }}: {{ .Values.svc_sts.labels.value }}
 spec:
   ports:
-  - port: {{ .Values.svc_sts.port }}
-    name: mysql
-  clusterIP: None
+  - name: mysql
+    port: {{ .Values.svc_sts.port }}
+    clusterIP: None
   selector:
     {{ .Values.svc_sts.selector.key }}: {{ .Values.svc_sts.selector.value }}
 ---
