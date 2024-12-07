@@ -39,6 +39,7 @@ sts_env:
 
 svc_sts:
   name: mysql
+  port: 3306
   labels:
     key: app
     value: mysql
