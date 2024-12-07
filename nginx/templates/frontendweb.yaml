@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.deploy_web.name }} 
+  labels:
+    {{ .Values.deploy_web.labels.key }}: {{ .Values.deploy_web.labels.value }}
+spec:
+  strategy:
+    rollingUpdate:
+      maxSurge: {{ .Values.deploy_web.roll_upd.max_surge}} #25%
+      maxUnavailable: {{ .Values.deploy_web.roll_upd.max_unavlbl }} #25%
+    type: RollingUpdate
+  replicas: {{ .Values.deploy_web.replicas }} 
+  selector:
+    matchLabels:
+      {{ .Values.deploy_web.selector.key }}: {{ .Values.deploy_web.selector.value }} 
+  template:
+    metadata:
+      labels:
+        {{ .Values.deploy_web.labels.key }}: {{ .Values.deploy_web.labels.value }}
+    spec:
+      containers:
+      - name: devops-web
+        image: {{ .Values.deploy_web.image }} #projectacr55555.azurecr.io/project/image-web:1.0.0
+        ports:
+        - containerPort: {{ .Values.deploy_web.containerport }} #3000
+        env:
+        - name: PORT
+          valueFrom:
+            configMapKeyRef:
+              name: {{ .Values.cm_web.name }}
+              key: PORT
+        - name: API_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: {{ .Values.cm_web.name }}
+              key: API_HOST
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.service_web.name }}
+spec:
+  selector:
+    {{ .Values.service_web.selector.key }}: {{ .Values.service_web.selector.value }}
+  ports:
+    - protocol: TCP
+      port: {{ .Values.service_web.port }} 
+      targetPort: {{ .Values.deploy_web.containerport }} 
+  type: {{ .Values.service_web.type }} 

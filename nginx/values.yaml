@@ -1,0 +1,91 @@
+cm_api:
+  name: devops-api-config
+  port: 3001
+  db: devops_db
+  dbuser: devops_user
+  dbhost: mysql
+  dbport: 3306
+
+cm_web: 
+  name: devops-web-config
+
+secret:
+  name: devops-api-secret
+  dbpass: cGFzc3dvcmQ=
+
+sts:
+  name: mysql
+  image: mysql:5.7
+  selector:
+    key: app
+    value: mysql
+  labels:
+    key: app
+    value: mysql
+  containerport: 3306
+  volume:
+    name: mysql-persistent-storage
+    mount_path: /var/lib/mysql
+  volume_claim: 
+    name: mysql-persistent-storage
+    access_mode: ReadWriteOnce
+    storage: 1Gi
+
+sts_env:
+  root_pass: rootpassword
+  mysql_db: devops_db
+  mysql_user: devops_user
+  mysql_pass: password
+
+svc_sts:
+  name: mysql
+  labels:
+    key: app
+    value: mysql
+  selector:
+    key: app
+    value: mysql
+  
+deployment_api:
+  name: devops-api
+  image: projectacr55555.azurecr.io/project/image:1.0.0
+  labels: 
+    key: app
+    value: devops-api
+  replicas: 3
+  selector:
+    key: app
+    value: devops-api
+  containerport: 3001
+
+service_api:
+  name: devops-api
+  selector:
+    key: app
+    value: devops-api
+  service_port: 3001
+  type: LoadBalancer
+
+deploy_web:
+  name: devops-web
+  image: projectacr55555.azurecr.io/project/image-web:1.0.0
+  labels:
+    key: app
+    value: devops-web
+  replicas: 4
+  roll_upd:
+    max_surge: 25%
+    max_unavlbl: 25%
+  selector:
+    key: app
+    value: devops-web
+  containerport: 3000
+
+service_web:
+    name: devops-web
+    selector: 
+      key: app
+      value: devops-web
+    port: 3000
+    type: LoadBalancer
+

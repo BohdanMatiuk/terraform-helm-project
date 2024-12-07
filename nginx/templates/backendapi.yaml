@@ -1,0 +1,66 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.deployment_api.name }} #devops_api
+  labels:
+    {{ .Values.deployment_api.labels.key }}: {{ .Values.deployment_api.labels.value }} #app: devops_api
+spec:
+  replicas: {{ .Values.deployment_api.replicas }} #3
+  selector:
+    matchLabels:
+      {{ .Values.deployment_api.selector.key }}: {{ .Values.deployment_api.selector.value }}
+  template:
+    metadata:
+      labels:
+        {{ .Values.deployment_api.labels.key }}: {{ .Values.deployment_api.labels.value }}
+    spec:
+      containers:
+      - name: {{ .Values.deployment_api.name }}
+        image: {{ .Values.deployment_api.image }} #projectacr55555.azurecr.io/project/image:1.0.0
+        ports:
+        - containerPort: {{ .Values.deployment_api.containerport }}
+        env:
+        - name: PORT
+          valueFrom:
+            configMapKeyRef:
+              name: {{ .Values.cm_api.name }}
+              key: PORT
+        - name: DB
+          valueFrom:
+            configMapKeyRef:
+              name: {{ .Values.cm_api.name }}
+              key: DB
+        - name: DBUSER
+          valueFrom:
+            configMapKeyRef:
+              name: {{ .Values.cm_api.name }}
+              key: DBUSER
+        - name: DBPORT
+          valueFrom:
+            configMapKeyRef:
+              name: {{ .Values.cm_api.name }}
+              key: DBPORT
+        - name: DBHOST
+          valueFrom:
+            configMapKeyRef:
+              name: {{ .Values.cm_api.name }}
+              key: DBHOST
+        - name: DBPASS
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.secret.name }}
+              key: DBPASS
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.service_api.name }} #devops-api
+spec:
+  selector:
+    {{ .Values.service_api.selector.key }}: {{ .Values.service_api.selector.value }}
+  ports:
+    - protocol: TCP
+      port: {{ .Values.service_api.service_port }} #3001
+      targetPort: {{ .Values.deployment_api.containerport }} #3001
+  type: {{ .Values.service_api.type }} #LoadBalancer

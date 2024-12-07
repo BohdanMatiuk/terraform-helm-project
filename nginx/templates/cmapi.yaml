@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.cm_api.name }} 
+data:
+  PORT: "{{ .Values.cm_api.port }}" 
+  DB: "{{ .Values.cm_api.db }}" 
+  DBUSER: "{{ .Values.cm_api.dbuser }}" 
+  DBHOST: "{{ .Values.cm_api.dbhost }}" 
+  DBPORT: "{{ .Values.cm_api.dbport }}" 
+

@@ -1,0 +1,65 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.svc_sts.name }}
+  labels:
+    {{ .Values.svc_sts.labels.key }}: {{ .Values.svc_sts.labels.value }}
+spec:
+  ports:
+  - port: {{ .Values.sts.containerport }}
+    name: mysql
+  clusterIP: None
+  selector:
+    {{ .Values.svc_sts.selector.key }}: {{ .Values.svc_sts.selector.value }}
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ .Values.sts.name }}
+spec:
+  selector:
+    matchLabels:
+      {{ .Values.sts.selector.key }}: {{ .Values.sts.selector.value }}
+  serviceName: "{{ .Values.svc_sts.name }}"
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        {{ .Values.sts.labels.key }}: {{ .Values.sts.labels.value }}
+    spec:
+      initContainers:
+      - name: init-mysql
+        image: busybox
+        command:
+        - sh
+        - -c
+        - rm -rf /var/lib/mysql/*
+        volumeMounts:
+        - name: mysql-persistent-storage
+          mountPath: /var/lib/mysql
+      containers:
+      - name: mysql
+        image: {{ .Values.sts.image }} #mysql:5.7
+        ports:
+        - containerPort: {{ .Values.sts.containerport }}
+          name: mysql
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          value: {{ .Values.sts_env.root_pass }} 
+        - name: MYSQL_DATABASE
+          value: {{ .Values.sts_env.mysql_db }} 
+        - name: MYSQL_USER
+          value: {{ .Values.sts_env.mysql_user }} 
+        - name: MYSQL_PASSWORD
+          value: {{ .Values.sts_env.mysql_pass }}  
+        volumeMounts:
+        - name: {{ .Values.sts.volume.name }} 
+          mountPath: {{ .Values.sts.volume.mount_path }} #/var/lib/mysql
+  volumeClaimTemplates:
+  - metadata:
+      name: {{ .Values.sts.volume_claim.name }} #mysql-persistent-storage
+    spec:
+      accessModes: [ {{ .Values.sts.volume_claim.access_mode }} ]
+      resources:
+        requests:
+          storage: {{ .Values.sts.volume_claim.storage }}

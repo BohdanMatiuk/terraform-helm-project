@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.cm_web.name }} 
+data:
+  PORT: "{{ .Values.service_web.port }}"
+  API_HOST: http://{{ .Values.service_api.name }}:{{ .Values.service_api.service_port }} #http://devops-api:3001
