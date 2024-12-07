@@ -12,7 +12,7 @@ resource "helm_release" "aks_project" {
   name       = "chart"
   repository = ".."
   chart      = "nginx"
-  version    = "1.16.0"
+  version    = "0.1.0"
 }
 
 
